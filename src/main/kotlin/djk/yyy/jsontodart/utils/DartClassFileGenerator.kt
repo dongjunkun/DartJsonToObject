@@ -224,8 +224,6 @@ class DartClassFileGenerator(private val interceptors: List<IDartClassIntercepto
             append(classCode)
         }
 
-        println("classCodeContent = $classCodeContent")
-
         executeCouldRollBackAction(project) {
             val file = psiFileFactory.createFileFromText("$fileName.dart", DartFileType(), classCodeContent)
 

@@ -36,7 +36,7 @@ fun getPrimitiveType(jsonPrimitive: JsonPrimitive): String {
     } else if (jsonPrimitive.isNumber) {
         if (jsonPrimitive.asString.contains(".")) {
             subType = "double"
-        }else {
+        } else {
             subType = "int"
         }
     } else if (jsonPrimitive.isString) {
@@ -49,6 +49,10 @@ fun getPrimitiveType(jsonPrimitive: JsonPrimitive): String {
 fun getJsonObjectType(type: String): String {
 
     return KClassName.getName(type)
+}
+
+fun isRawType(type: String): Boolean {
+    return type == TYPE_STRING || type == TYPE_BOOLEAN || type == TYPE_INT || type == TYPE_DOUBLE || type == TYPE_ANY
 }
 
 

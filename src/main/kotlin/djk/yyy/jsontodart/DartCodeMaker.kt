@@ -6,6 +6,7 @@ import com.google.gson.JsonObject
 import main.kotlin.djk.yyy.jsontodart.codeelements.KClassAnnotation
 import main.kotlin.djk.yyy.jsontodart.codeelements.KProperty
 import main.kotlin.djk.yyy.jsontodart.utils.*
+import org.codehaus.groovy.vmplugin.v7.TypeHelper
 import java.util.*
 
 /**
@@ -35,7 +36,24 @@ class DartCodeMaker {
         this.className = className
     }
 
+    private fun getClassName(className: String): String {
+        val words = className.split("_")
+        val sb = StringBuilder()
+
+        for (i in words.indices) {
+            val idTokens = words[i].split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            val chars = idTokens[idTokens.size - 1].toCharArray()
+            if (chars.isNotEmpty())
+                chars[0] = Character.toUpperCase(chars[0])
+
+            sb.append(chars)
+        }
+
+        return sb.toString()
+    }
+
     fun makeDart(): String {
+        className = getClassName(className!!)
         val stringBuilder = StringBuilder()
         stringBuilder.append("\n")
 
@@ -211,7 +229,16 @@ class DartCodeMaker {
         } else if (pType == 1) {
             stringBuilder.append("final $type $property;")
         } else if (pType == 2) {
-            stringBuilder.append("  json['$property'] as $type")
+            if (type.startsWith("List")) {
+                stringBuilder.append("(json['$property'] as List)\n" +
+                        "        ?.map(\n" +
+                        "            (e) => e == null ? null : ${getChildType(type)}.fromJson(e as Map<String, dynamic>))\n" +
+                        "        ?.toList()")
+            } else if (isRawType(type).not()) {
+                stringBuilder.append("$type.fromJson(json['$property'])")
+            } else {
+                stringBuilder.append("  json['$property'] as $type")
+            }
             if (isLast) {
                 stringBuilder.append(");")
             } else {
